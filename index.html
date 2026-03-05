@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RIFF — De Ultieme Muziek Rankings</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--black:#0a0a0a;--dark:#111111;--panel:#181818;--border:#2a2a2a;--red:#e63329;--red-dark:#9e1f1a;--gold:#c9a84c;--white:#f0ede8;--grey:#888880;--light:#ccc8c0;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--black);color:var(--white);font-family:'Barlow',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:0.4;}
+  header{background:var(--dark);border-bottom:3px solid var(--red);padding:0 2rem;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:70px;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:4px;color:var(--white);line-height:1;text-decoration:none;}
+  .logo span{color:var(--red);}
+  .logo-sub{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;letter-spacing:6px;color:var(--grey);display:block;margin-top:-4px;text-transform:uppercase;}
+  nav{display:flex;gap:2rem;align-items:center;}
+  nav a{font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;letter-spacing:3px;text-transform:uppercase;color:var(--grey);text-decoration:none;transition:color 0.2s;cursor:pointer;}
+  nav a:hover,nav a.active{color:var(--white);}
+  nav a.active{border-bottom:2px solid var(--red);padding-bottom:2px;}
+  .search-wrapper{position:relative;}
+  .search-bar{display:flex;align-items:center;background:var(--panel);border:1px solid var(--border);padding:6px 14px;gap:8px;transition:border-color 0.2s;}
+  .search-bar:focus-within{border-color:var(--red);}
+  .search-bar input{background:none;border:none;outline:none;color:var(--white);font-family:'Barlow',sans-serif;font-size:0.85rem;width:180px;}
+  .search-bar input::placeholder{color:var(--grey);}
+  .search-results{display:none;background:var(--dark);border:1px solid var(--border);border-top:none;position:absolute;top:100%;right:0;width:360px;z-index:200;max-height:420px;overflow-y:auto;}
+  .search-results.visible{display:block;}
+  .search-result-item{padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;}
+  .search-result-item:hover{background:var(--panel);}
+  .sr-name{font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;color:var(--white);}
+  .sr-cat{font-size:0.7rem;color:var(--red);letter-spacing:2px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;}
+  .hero{position:relative;padding:6rem 2rem 4rem;background:linear-gradient(180deg,#1a0505 0%,var(--black) 100%);overflow:hidden;text-align:center;}
+  .hero::before{content:'RIFF';position:absolute;font-family:'Bebas Neue',sans-serif;font-size:28vw;color:rgba(230,51,41,0.04);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;letter-spacing:-1vw;white-space:nowrap;}
+  .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,8vw,7rem);letter-spacing:4px;line-height:0.9;position:relative;}
+  .hero h1 em{color:var(--red);font-style:normal;}
+  .hero p{color:var(--grey);font-size:1rem;letter-spacing:2px;text-transform:uppercase;margin-top:1.5rem;font-family:'Barlow Condensed',sans-serif;position:relative;}
+  .hero-line{width:80px;height:3px;background:var(--red);margin:1.5rem auto 0;}
+  .tabs{display:flex;border-bottom:1px solid var(--border);padding:0 2rem;background:var(--dark);overflow-x:auto;}
+  .tab-btn{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;letter-spacing:3px;text-transform:uppercase;color:var(--grey);background:none;border:none;border-bottom:3px solid transparent;padding:1.2rem 1.8rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .tab-btn:hover{color:var(--white);}
+  .tab-btn.active{color:var(--white);border-bottom-color:var(--red);}
+  main{max-width:1200px;margin:0 auto;padding:3rem 2rem;display:grid;grid-template-columns:1fr 340px;gap:3rem;}
+  .section-title{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:3px;margin-bottom:0.3rem;}
+  .section-title span{color:var(--red);}
+  .section-sub{font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:4px;text-transform:uppercase;color:var(--grey);margin-bottom:2rem;}
+  .ranking-list{display:flex;flex-direction:column;}
+  .rank-item{display:flex;align-items:center;gap:1.2rem;padding:0.85rem 1.2rem;background:var(--panel);border:1px solid var(--border);border-top:none;transition:background 0.2s;position:relative;overflow:hidden;}
+  .rank-item:first-child{border-top:1px solid var(--border);}
+  .rank-item:hover{background:#1e1e1e;}
+  .rank-item.top-1{border-left:4px solid var(--gold);}
+  .rank-item.top-2{border-left:4px solid #9ea0a3;}
+  .rank-item.top-3{border-left:4px solid #a0633a;}
+  .rank-item.top-other{border-left:4px solid var(--border);}
+  .rank-num{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;width:40px;text-align:center;flex-shrink:0;line-height:1;}
+  .top-1 .rank-num{color:var(--gold);}
+  .top-2 .rank-num{color:#9ea0a3;}
+  .top-3 .rank-num{color:#a0633a;}
+  .top-other .rank-num{color:#3a3a3a;}
+  .rank-info{flex:1;min-width:0;}
+  .rank-name{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rank-detail{font-size:0.75rem;color:var(--grey);margin-top:1px;}
+  .rank-votes{text-align:right;flex-shrink:0;min-width:65px;}
+  .vote-count{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;line-height:1;}
+  .vote-label{font-size:0.6rem;letter-spacing:2px;color:var(--grey);text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;}
+  .vote-btn{position:relative;background:var(--panel);border:1px solid var(--border);color:var(--grey);width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;font-size:0.9rem;flex-shrink:0;border-radius:2px;}
+  .vote-btn:hover{background:var(--red);border-color:var(--red);color:white;}
+  .vote-btn.voted{background:var(--red);border-color:var(--red);color:white;}
+  .vote-btn.voted:hover{background:#7a1510;border-color:#7a1510;}
+  .vote-tooltip{position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:#222;color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;letter-spacing:1px;padding:3px 7px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.15s;border:1px solid var(--border);}
+  .vote-btn:hover .vote-tooltip{opacity:1;}
+  .rank-bar{position:absolute;bottom:0;left:0;height:2px;background:var(--red);opacity:0.15;}
+  .sidebar{display:flex;flex-direction:column;gap:2rem;}
+  .sidebar-card{background:var(--panel);border:1px solid var(--border);padding:1.5rem;}
+  .card-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:3px;margin-bottom:0.3rem;}
+  .card-sub{font-size:0.7rem;letter-spacing:3px;color:var(--grey);text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;margin-bottom:1.2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+  .poll-option{margin-bottom:0.8rem;}
+  .poll-label{display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;cursor:pointer;color:var(--light);transition:color 0.15s;}
+  .poll-label:hover{color:white;}
+  .poll-label.selected{color:var(--red);}
+  .poll-bar-bg{height:6px;background:var(--border);}
+  .poll-bar-fill{height:100%;background:var(--red);transition:width 0.6s ease;}
+  .poll-btn{width:100%;background:var(--red);border:none;color:white;font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;letter-spacing:3px;text-transform:uppercase;padding:10px;cursor:pointer;margin-top:1rem;transition:background 0.2s;}
+  .poll-btn:hover{background:var(--red-dark);}
+  .comment{padding:0.8rem 0;border-bottom:1px solid var(--border);}
+  .comment:last-of-type{border-bottom:none;}
+  .comment-header{display:flex;justify-content:space-between;margin-bottom:4px;}
+  .comment-author{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--red);}
+  .comment-time{font-size:0.7rem;color:var(--grey);}
+  .comment-text{font-size:0.85rem;color:var(--light);line-height:1.5;}
+  .comment-form{margin-top:1rem;display:flex;flex-direction:column;gap:0.6rem;}
+  .comment-form input,.comment-form textarea{background:var(--dark);border:1px solid var(--border);color:var(--white);padding:8px 12px;font-family:'Barlow',sans-serif;font-size:0.85rem;outline:none;resize:none;transition:border-color 0.2s;}
+  .comment-form input:focus,.comment-form textarea:focus{border-color:var(--red);}
+  .comment-form input::placeholder,.comment-form textarea::placeholder{color:var(--grey);}
+  .comment-submit{background:none;border:1px solid var(--red);color:var(--red);font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;padding:8px;cursor:pointer;transition:all 0.2s;}
+  .comment-submit:hover{background:var(--red);color:white;}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+  footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--grey);margin-top:4rem;}
+  footer span{color:var(--red);}
+  .toast{position:fixed;bottom:2rem;right:2rem;background:var(--red);color:white;font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;padding:12px 20px;z-index:999;transform:translateY(100px);opacity:0;transition:all 0.3s;border-left:4px solid var(--gold);}
+  .toast.show{transform:translateY(0);opacity:1;}
+  @media(max-width:768px){main{grid-template-columns:1fr;}nav{display:none;}.search-bar input{width:110px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">RIFF<span>.</span><span class="logo-sub">De Ultieme Muziek Rankings</span></a>
+  <nav>
+    <a class="active" onclick="switchTabByKey('bands',this)">Bands</a>
+    <a onclick="switchTabByKey('songs',this)">Songs</a>
+    <a onclick="switchTabByKey('solos',this)">Solos</a>
+    <a onclick="switchTabByKey('decades',this)">Decennia</a>
+  </nav>
+  <div class="search-wrapper">
+    <div class="search-bar">
+      <span>🔍</span>
+      <input type="text" placeholder="Zoek bands, songs..." id="searchInput" oninput="handleSearch(this.value)" onfocus="showSearchResults()" onblur="setTimeout(hideSearchResults,200)">
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</header>
+
+<div class="hero">
+  <h1>DE BESTE<br><em>MUZIEK</em><br>OOIT GEMAAKT</h1>
+  <p>Stem mee · Annuleer je stem · Reageer · Bepaal de ranglijst</p>
+  <div class="hero-line"></div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('bands',this)">🎸 Beste Bands</button>
+  <button class="tab-btn" onclick="switchTab('songs',this)">🎵 Beste Songs</button>
+  <button class="tab-btn" onclick="switchTab('solos',this)">⚡ Beste Gitaarsolos</button>
+  <button class="tab-btn" onclick="switchTab('decades',this)">📅 Per Decennium</button>
+</div>
+
+<main>
+  <div>
+    <div class="tab-content active" id="tab-bands">
+      <div class="section-title">Beste <span>Bands</span> Ooit</div>
+      <div class="section-sub">Top 100 · ▲ om te stemmen · nogmaals klikken annuleert je stem</div>
+      <div class="ranking-list" id="list-bands"></div>
+    </div>
+    <div class="tab-content" id="tab-songs">
+      <div class="section-title">Beste <span>Songs</span> Ooit</div>
+      <div class="section-sub">Top 100 · ▲ om te stemmen · nogmaals klikken annuleert je stem</div>
+      <div class="ranking-list" id="list-songs"></div>
+    </div>
+    <div class="tab-content" id="tab-solos">
+      <div class="section-title">Beste <span>Gitaarsolos</span> Ooit</div>
+      <div class="section-sub">Top 100 · ▲ om te stemmen · nogmaals klikken annuleert je stem</div>
+      <div class="ranking-list" id="list-solos"></div>
+    </div>
+    <div class="tab-content" id="tab-decades">
+      <div class="section-title">Beste <span>Decennia</span></div>
+      <div class="section-sub">Muziek per tijdperk · ▲ om te stemmen · nogmaals klikken annuleert</div>
+      <div class="ranking-list" id="list-decades"></div>
+    </div>
+  </div>
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <div class="card-title">Weekpoll</div>
+      <div class="card-sub">Welk decennium had de beste rockmuziek?</div>
+      <div id="pollOptions"></div>
+      <button class="poll-btn" onclick="submitPoll()">STEM NU</button>
+    </div>
+    <div class="sidebar-card">
+      <div class="card-title">Reacties</div>
+      <div class="card-sub">Laat je mening horen</div>
+      <div id="commentsList"></div>
+      <div class="comment-form">
+        <input type="text" id="commentName" placeholder="Jouw naam (bijv. MetalFan87)">
+        <textarea id="commentText" rows="3" placeholder="Jouw mening over de rankings..."></textarea>
+        <button class="comment-submit" onclick="addComment()">Reactie Plaatsen →</button>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer><span>RIFF</span> — De Ultieme Muziek Rankings · Gebouwd met passie voor muziek</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const data = {
+  bands:[
+    {name:"Led Zeppelin",detail:"1968–1980 · Hard Rock / Blues Rock",votes:4821},
+    {name:"The Beatles",detail:"1960–1970 · Rock / Pop",votes:4650},
+    {name:"Pink Floyd",detail:"1965–heden · Progressive / Psychedelic Rock",votes:4102},
+    {name:"Queen",detail:"1970–heden · Rock / Glam Rock",votes:3987},
+    {name:"Black Sabbath",detail:"1968–2017 · Heavy Metal",votes:3876},
+    {name:"Metallica",detail:"1981–heden · Thrash Metal",votes:3654},
+    {name:"The Rolling Stones",detail:"1962–heden · Rock / Blues Rock",votes:3501},
+    {name:"AC/DC",detail:"1973–heden · Hard Rock",votes:3376},
+    {name:"Nirvana",detail:"1987–1994 · Grunge",votes:3254},
+    {name:"Deep Purple",detail:"1968–heden · Hard Rock / Heavy Metal",votes:3132},
+    {name:"Guns N' Roses",detail:"1985–heden · Hard Rock",votes:3010},
+    {name:"Jimi Hendrix Experience",detail:"1966–1970 · Psychedelic Rock",votes:2987},
+    {name:"The Doors",detail:"1965–1973 · Psychedelic Rock",votes:2854},
+    {name:"Cream",detail:"1966–1968 · Blues Rock / Psychedelia",votes:2721},
+    {name:"Aerosmith",detail:"1970–heden · Hard Rock",votes:2698},
+    {name:"Iron Maiden",detail:"1975–heden · Heavy Metal",votes:2654},
+    {name:"Radiohead",detail:"1985–heden · Alternative / Art Rock",votes:2510},
+    {name:"The Who",detail:"1964–heden · Rock",votes:2476},
+    {name:"Bruce Springsteen & E Street Band",detail:"1972–heden · Rock / Heartland Rock",votes:2340},
+    {name:"David Bowie",detail:"1962–2016 · Glam / Art Rock",votes:2298},
+    {name:"U2",detail:"1976–heden · Post-Punk / Rock",votes:2176},
+    {name:"Pearl Jam",detail:"1990–heden · Grunge / Alternative",votes:2154},
+    {name:"Soundgarden",detail:"1984–2017 · Grunge / Metal",votes:2121},
+    {name:"Alice in Chains",detail:"1987–heden · Grunge / Metal",votes:2087},
+    {name:"Van Halen",detail:"1974–2020 · Hard Rock",votes:2065},
+    {name:"Fleetwood Mac",detail:"1967–heden · Rock / Soft Rock",votes:2032},
+    {name:"R.E.M.",detail:"1980–2011 · Alternative Rock",votes:1998},
+    {name:"Rage Against the Machine",detail:"1991–heden · Rap Metal / Alternative",votes:1965},
+    {name:"Judas Priest",detail:"1969–heden · Heavy Metal",votes:1943},
+    {name:"Ozzy Osbourne",detail:"1979–heden · Heavy Metal",votes:1910},
+    {name:"The Cure",detail:"1978–heden · Post-Punk / Gothic Rock",votes:1887},
+    {name:"Depeche Mode",detail:"1980–heden · Synth-pop / Alternative",votes:1865},
+    {name:"Red Hot Chili Peppers",detail:"1983–heden · Alternative / Funk Rock",votes:1843},
+    {name:"Foo Fighters",detail:"1994–heden · Alternative Rock",votes:1821},
+    {name:"Smashing Pumpkins",detail:"1988–heden · Alternative Rock",votes:1798},
+    {name:"The Clash",detail:"1976–1986 · Punk Rock",votes:1776},
+    {name:"Sex Pistols",detail:"1975–1978 · Punk Rock",votes:1754},
+    {name:"Ramones",detail:"1974–1996 · Punk Rock",votes:1732},
+    {name:"Talking Heads",detail:"1975–1991 · New Wave / Post-Punk",votes:1710},
+    {name:"Elvis Presley",detail:"1954–1977 · Rock 'n Roll",votes:1698},
+    {name:"Chuck Berry",detail:"1955–2017 · Rock 'n Roll",votes:1676},
+    {name:"Eric Clapton",detail:"1963–heden · Blues Rock",votes:1543},
+    {name:"Thin Lizzy",detail:"1969–1983 · Hard Rock",votes:1521},
+    {name:"Rush",detail:"1968–2018 · Progressive Rock / Hard Rock",votes:1476},
+    {name:"Yes",detail:"1968–heden · Progressive Rock",votes:1454},
+    {name:"Genesis",detail:"1967–heden · Progressive / Pop Rock",votes:1432},
+    {name:"King Crimson",detail:"1968–heden · Progressive Rock",votes:1410},
+    {name:"Tool",detail:"1990–heden · Progressive / Alternative Metal",votes:1398},
+    {name:"Nine Inch Nails",detail:"1988–heden · Industrial Rock",votes:1376},
+    {name:"Marilyn Manson",detail:"1989–heden · Industrial Metal / Shock Rock",votes:1243},
+    {name:"Slayer",detail:"1981–2019 · Thrash Metal",votes:1221},
+    {name:"Megadeth",detail:"1983–heden · Thrash Metal",votes:1198},
+    {name:"Pantera",detail:"1981–2003 · Groove Metal",votes:1176},
+    {name:"System of a Down",detail:"1994–heden · Nu-Metal / Alternative",votes:1154},
+    {name:"Linkin Park",detail:"1996–heden · Nu-Metal / Alternative",votes:1132},
+    {name:"Korn",detail:"1993–heden · Nu-Metal",votes:1110},
+    {name:"Deftones",detail:"1988–heden · Alternative Metal",votes:1087},
+    {name:"Jane's Addiction",detail:"1985–heden · Alternative Rock",votes:1065},
+    {name:"Pixies",detail:"1986–heden · Alternative Rock",votes:1043},
+    {name:"Sonic Youth",detail:"1981–2011 · Noise Rock",votes:1021},
+    {name:"Weezer",detail:"1992–heden · Alternative / Power Pop",votes:954},
+    {name:"Blur",detail:"1988–heden · Britpop / Alternative",votes:910},
+    {name:"Oasis",detail:"1991–2009 · Britpop / Rock",votes:898},
+    {name:"Pulp",detail:"1978–heden · Britpop",votes:876},
+    {name:"Suede",detail:"1989–heden · Britpop / Glam Rock",votes:854},
+    {name:"The Verve",detail:"1990–2009 · Alternative / Britpop",votes:832},
+    {name:"Massive Attack",detail:"1988–heden · Trip-Hop",votes:810},
+    {name:"Portishead",detail:"1991–heden · Trip-Hop",votes:787},
+    {name:"Nick Cave & The Bad Seeds",detail:"1983–heden · Post-Punk / Gothic",votes:765},
+    {name:"The National",detail:"1999–heden · Indie Rock",votes:743},
+    {name:"Arcade Fire",detail:"2001–heden · Indie Rock",votes:721},
+    {name:"LCD Soundsystem",detail:"2002–heden · Dance-Punk",votes:698},
+    {name:"Interpol",detail:"2002–heden · Post-Punk Revival",votes:676},
+    {name:"The Strokes",detail:"2000–heden · Post-Punk Revival",votes:654},
+    {name:"Arctic Monkeys",detail:"2002–heden · Indie Rock",votes:632},
+    {name:"Franz Ferdinand",detail:"2002–heden · Indie Rock / Post-Punk",votes:610},
+    {name:"Muse",detail:"1994–heden · Alternative / Space Rock",votes:587},
+    {name:"Placebo",detail:"1994–heden · Alternative Rock",votes:565},
+    {name:"Evanescence",detail:"1995–heden · Gothic Metal / Rock",votes:543},
+    {name:"Within Temptation",detail:"1996–heden · Symphonic Metal",votes:521},
+    {name:"Nightwish",detail:"1996–heden · Symphonic Metal",votes:498},
+    {name:"Rammstein",detail:"1994–heden · Industrial Metal",votes:476},
+    {name:"Kraftwerk",detail:"1970–heden · Elektronisch / Synthpop",votes:454},
+    {name:"Can",detail:"1968–1979 · Krautrock",votes:432},
+    {name:"Joy Division",detail:"1976–1980 · Post-Punk",votes:410},
+    {name:"New Order",detail:"1980–heden · Post-Punk / Synth-pop",votes:387},
+    {name:"The Smiths",detail:"1982–1987 · Post-Punk / Jangle Pop",votes:365},
+    {name:"The Jesus and Mary Chain",detail:"1983–heden · Noise Pop / Shoegaze",votes:343},
+    {name:"My Bloody Valentine",detail:"1983–heden · Shoegaze",votes:321},
+    {name:"Slowdive",detail:"1989–heden · Shoegaze",votes:298},
+    {name:"Television",detail:"1973–1978 · Post-Punk / Art Rock",votes:276},
+    {name:"Wire",detail:"1976–heden · Post-Punk / Minimalist Rock",votes:254},
+    {name:"Motörhead",detail:"1975–2015 · Heavy Metal / Punk",votes:243},
+    {name:"Bauhaus",detail:"1978–1983 · Post-Punk / Gothic Rock",votes:221},
+    {name:"Sisters of Mercy",detail:"1980–heden · Gothic Rock",votes:198},
+    {name:"The Stooges",detail:"1967–1974 · Proto-Punk / Garage Rock",votes:187},
+    {name:"MC5",detail:"1964–1972 · Proto-Punk / Hard Rock",votes:165},
+    {name:"Velvet Underground",detail:"1964–1973 · Art Rock / Experimental",votes:154},
+    {name:"Iggy Pop",detail:"1977–heden · Punk / New Wave",votes:132},
+  ],
+  songs:[
+    {name:"Stairway to Heaven",detail:"Led Zeppelin · 1971",votes:4821},
+    {name:"Bohemian Rhapsody",detail:"Queen · 1975",votes:4654},
+    {name:"Hotel California",detail:"Eagles · 1977",votes:4432},
+    {name:"Smells Like Teen Spirit",detail:"Nirvana · 1991",votes:4210},
+    {name:"Comfortably Numb",detail:"Pink Floyd · 1979",votes:4105},
+    {name:"Sweet Child O' Mine",detail:"Guns N' Roses · 1987",votes:3987},
+    {name:"Back in Black",detail:"AC/DC · 1980",votes:3865},
+    {name:"Purple Haze",detail:"Jimi Hendrix · 1967",votes:3743},
+    {name:"Paranoid",detail:"Black Sabbath · 1970",votes:3621},
+    {name:"Whole Lotta Love",detail:"Led Zeppelin · 1969",votes:3510},
+    {name:"Layla",detail:"Derek and the Dominos · 1970",votes:3398},
+    {name:"Satisfaction",detail:"The Rolling Stones · 1965",votes:3276},
+    {name:"Johnny B. Goode",detail:"Chuck Berry · 1958",votes:3154},
+    {name:"Baba O'Riley",detail:"The Who · 1971",votes:3043},
+    {name:"Light My Fire",detail:"The Doors · 1967",votes:2987},
+    {name:"Born to Run",detail:"Bruce Springsteen · 1975",votes:2865},
+    {name:"Dream On",detail:"Aerosmith · 1973",votes:2743},
+    {name:"Highway to Hell",detail:"AC/DC · 1979",votes:2621},
+    {name:"Master of Puppets",detail:"Metallica · 1986",votes:2510},
+    {name:"November Rain",detail:"Guns N' Roses · 1991",votes:2398},
+    {name:"Kashmir",detail:"Led Zeppelin · 1975",votes:2287},
+    {name:"Wish You Were Here",detail:"Pink Floyd · 1975",votes:2265},
+    {name:"Money",detail:"Pink Floyd · 1973",votes:2243},
+    {name:"We Will Rock You",detail:"Queen · 1977",votes:2221},
+    {name:"Don't Stop Me Now",detail:"Queen · 1978",votes:2198},
+    {name:"Iron Man",detail:"Black Sabbath · 1970",votes:2154},
+    {name:"Enter Sandman",detail:"Metallica · 1991",votes:2132},
+    {name:"One",detail:"Metallica · 1988",votes:2110},
+    {name:"Fade to Black",detail:"Metallica · 1984",votes:2087},
+    {name:"Welcome to the Jungle",detail:"Guns N' Roses · 1987",votes:2065},
+    {name:"Paradise City",detail:"Guns N' Roses · 1987",votes:2043},
+    {name:"Black Hole Sun",detail:"Soundgarden · 1994",votes:2021},
+    {name:"Would?",detail:"Alice in Chains · 1992",votes:1998},
+    {name:"Rooster",detail:"Alice in Chains · 1992",votes:1976},
+    {name:"Jeremy",detail:"Pearl Jam · 1991",votes:1954},
+    {name:"Alive",detail:"Pearl Jam · 1991",votes:1932},
+    {name:"Even Flow",detail:"Pearl Jam · 1992",votes:1910},
+    {name:"Heart-Shaped Box",detail:"Nirvana · 1993",votes:1887},
+    {name:"Come as You Are",detail:"Nirvana · 1992",votes:1865},
+    {name:"In Bloom",detail:"Nirvana · 1991",votes:1843},
+    {name:"Creep",detail:"Radiohead · 1992",votes:1821},
+    {name:"Karma Police",detail:"Radiohead · 1997",votes:1798},
+    {name:"Fake Plastic Trees",detail:"Radiohead · 1995",votes:1776},
+    {name:"Losing My Religion",detail:"R.E.M. · 1991",votes:1754},
+    {name:"Everybody Hurts",detail:"R.E.M. · 1992",votes:1732},
+    {name:"Under the Bridge",detail:"Red Hot Chili Peppers · 1992",votes:1710},
+    {name:"Californication",detail:"Red Hot Chili Peppers · 1999",votes:1698},
+    {name:"Scar Tissue",detail:"Red Hot Chili Peppers · 1999",votes:1676},
+    {name:"Everlong",detail:"Foo Fighters · 1997",votes:1654},
+    {name:"Best of You",detail:"Foo Fighters · 2005",votes:1632},
+    {name:"Today",detail:"Smashing Pumpkins · 1993",votes:1610},
+    {name:"1979",detail:"Smashing Pumpkins · 1995",votes:1587},
+    {name:"Bullet with Butterfly Wings",detail:"Smashing Pumpkins · 1995",votes:1565},
+    {name:"Zombie",detail:"The Cranberries · 1994",votes:1543},
+    {name:"Dreams",detail:"The Cranberries · 1992",votes:1521},
+    {name:"Closer",detail:"Nine Inch Nails · 1994",votes:1498},
+    {name:"Hurt",detail:"Nine Inch Nails / Johnny Cash · 1994/2002",votes:1476},
+    {name:"Killing in the Name",detail:"Rage Against the Machine · 1992",votes:1454},
+    {name:"Bulls on Parade",detail:"Rage Against the Machine · 1996",votes:1432},
+    {name:"Walk",detail:"Pantera · 1992",votes:1410},
+    {name:"Cowboys from Hell",detail:"Pantera · 1990",votes:1387},
+    {name:"Raining Blood",detail:"Slayer · 1986",votes:1365},
+    {name:"Peace Sells",detail:"Megadeth · 1986",votes:1343},
+    {name:"B.Y.O.B.",detail:"System of a Down · 2005",votes:1321},
+    {name:"Chop Suey!",detail:"System of a Down · 2001",votes:1298},
+    {name:"In the End",detail:"Linkin Park · 2000",votes:1276},
+    {name:"Numb",detail:"Linkin Park · 2003",votes:1254},
+    {name:"Freak on a Leash",detail:"Korn · 1998",votes:1232},
+    {name:"Change (In the House of Flies)",detail:"Deftones · 2000",votes:1210},
+    {name:"Jane Says",detail:"Jane's Addiction · 1987",votes:1187},
+    {name:"Where Is My Mind?",detail:"Pixies · 1988",votes:1165},
+    {name:"Debaser",detail:"Pixies · 1989",votes:1143},
+    {name:"Champagne Supernova",detail:"Oasis · 1995",votes:1121},
+    {name:"Wonderwall",detail:"Oasis · 1995",votes:1098},
+    {name:"Song 2",detail:"Blur · 1997",votes:1076},
+    {name:"Common People",detail:"Pulp · 1995",votes:1054},
+    {name:"Bittersweet Symphony",detail:"The Verve · 1997",votes:1032},
+    {name:"Teardrop",detail:"Massive Attack · 1998",votes:1010},
+    {name:"Glory Box",detail:"Portishead · 1994",votes:987},
+    {name:"Running Up That Hill",detail:"Kate Bush · 1985",votes:965},
+    {name:"Into My Arms",detail:"Nick Cave & The Bad Seeds · 1997",votes:943},
+    {name:"Mr. Brightside",detail:"The Killers · 2003",votes:921},
+    {name:"Take Me Out",detail:"Franz Ferdinand · 2004",votes:898},
+    {name:"Last Nite",detail:"The Strokes · 2001",votes:876},
+    {name:"R U Mine?",detail:"Arctic Monkeys · 2013",votes:854},
+    {name:"Do I Wanna Know?",detail:"Arctic Monkeys · 2013",votes:832},
+    {name:"Knights of Cydonia",detail:"Muse · 2006",votes:810},
+    {name:"Uprising",detail:"Muse · 2009",votes:787},
+    {name:"Seven Nation Army",detail:"The White Stripes · 2003",votes:765},
+    {name:"Jolene",detail:"Dolly Parton · 1973",votes:743},
+    {name:"Africa",detail:"Toto · 1982",votes:721},
+    {name:"Ace of Spades",detail:"Motörhead · 1980",votes:698},
+    {name:"Smoke on the Water",detail:"Deep Purple · 1972",votes:676},
+    {name:"Child in Time",detail:"Deep Purple · 1970",votes:654},
+    {name:"Starman",detail:"David Bowie · 1972",votes:632},
+    {name:"Heroes",detail:"David Bowie · 1977",votes:610},
+    {name:"Space Oddity",detail:"David Bowie · 1969",votes:587},
+    {name:"Born This Way",detail:"Lady Gaga · 2011",votes:543},
+    {name:"Disarm",detail:"Smashing Pumpkins · 1993",votes:521},
+  ],
+  solos:[
+    {name:"Comfortably Numb — Outro Solo",detail:"David Gilmour / Pink Floyd · 1979",votes:5210},
+    {name:"Eruption",detail:"Eddie Van Halen / Van Halen · 1978",votes:4987},
+    {name:"Stairway to Heaven — Solo",detail:"Jimmy Page / Led Zeppelin · 1971",votes:4765},
+    {name:"Purple Haze — Solo",detail:"Jimi Hendrix · 1967",votes:4543},
+    {name:"November Rain — Solo",detail:"Slash / Guns N' Roses · 1992",votes:4321},
+    {name:"Hotel California — Outro",detail:"Don Felder & Joe Walsh / Eagles · 1977",votes:4100},
+    {name:"Bohemian Rhapsody — Solo",detail:"Brian May / Queen · 1975",votes:3987},
+    {name:"Cliffs of Dover",detail:"Eric Johnson · 1990",votes:3765},
+    {name:"Black Star — Solo",detail:"Yngwie Malmsteen · 1984",votes:3543},
+    {name:"Texas Flood — Solo",detail:"Stevie Ray Vaughan · 1983",votes:3432},
+    {name:"Little Wing — Solo",detail:"Jimi Hendrix · 1967",votes:3321},
+    {name:"Layla — Solo",detail:"Eric Clapton / Derek and the Dominos · 1970",votes:3210},
+    {name:"Crossroads — Solo",detail:"Eric Clapton / Cream · 1968",votes:3098},
+    {name:"While My Guitar Gently Weeps — Solo",detail:"George Harrison / The Beatles · 1968",votes:2987},
+    {name:"Sultans of Swing — Outro",detail:"Mark Knopfler / Dire Straits · 1978",votes:2876},
+    {name:"Free Bird — Outro",detail:"Collins & Rossington / Lynyrd Skynyrd · 1973",votes:2754},
+    {name:"One — Solo",detail:"Kirk Hammett / Metallica · 1988",votes:2621},
+    {name:"Fade to Black — Solo",detail:"Kirk Hammett / Metallica · 1984",votes:2598},
+    {name:"Master of Puppets — Solo",detail:"Kirk Hammett / Metallica · 1986",votes:2543},
+    {name:"Smells Like Teen Spirit — Solo",detail:"Kurt Cobain / Nirvana · 1991",votes:2398},
+    {name:"Sweet Child O' Mine — Intro",detail:"Slash / Guns N' Roses · 1987",votes:2376},
+    {name:"Paradise City — Solo",detail:"Slash / Guns N' Roses · 1987",votes:2354},
+    {name:"Whole Lotta Love — Solo",detail:"Jimmy Page / Led Zeppelin · 1969",votes:2321},
+    {name:"Heartbreaker — Solo",detail:"Jimmy Page / Led Zeppelin · 1969",votes:2298},
+    {name:"Paranoid — Solo",detail:"Tony Iommi / Black Sabbath · 1970",votes:2154},
+    {name:"Iron Man — Solo",detail:"Tony Iommi / Black Sabbath · 1970",votes:2132},
+    {name:"Crazy Train — Solo",detail:"Randy Rhoads / Ozzy Osbourne · 1980",votes:2110},
+    {name:"Mr. Crowley — Solo",detail:"Randy Rhoads / Ozzy Osbourne · 1980",votes:2087},
+    {name:"Ace of Spades — Solo",detail:"'Fast' Eddie Clarke / Motörhead · 1980",votes:2065},
+    {name:"Highway to Hell — Solo",detail:"Angus Young / AC/DC · 1979",votes:2043},
+    {name:"Back in Black — Solo",detail:"Angus Young / AC/DC · 1980",votes:2021},
+    {name:"Parisienne Walkways — Solo",detail:"Gary Moore · 1979",votes:1998},
+    {name:"Still Got the Blues — Solo",detail:"Gary Moore · 1990",votes:1976},
+    {name:"Floods — Solo",detail:"Dimebag Darrell / Pantera · 1996",votes:1954},
+    {name:"Cemetery Gates — Solo",detail:"Dimebag Darrell / Pantera · 1990",votes:1932},
+    {name:"Walk — Solo",detail:"Dimebag Darrell / Pantera · 1992",votes:1910},
+    {name:"Raining Blood — Solo",detail:"King & Hanneman / Slayer · 1986",votes:1887},
+    {name:"Peace Sells — Solo",detail:"Friedman & Mustaine / Megadeth · 1986",votes:1865},
+    {name:"Tornado of Souls — Solo",detail:"Marty Friedman / Megadeth · 1990",votes:1843},
+    {name:"Hangar 18 — Solo",detail:"Friedman & Mustaine / Megadeth · 1990",votes:1821},
+    {name:"For the Love of God",detail:"Steve Vai · 1990",votes:1798},
+    {name:"Tender Surrender",detail:"Steve Vai · 1995",votes:1776},
+    {name:"Surfing with the Alien",detail:"Joe Satriani · 1987",votes:1754},
+    {name:"Flying in a Blue Dream",detail:"Joe Satriani · 1989",votes:1732},
+    {name:"Samba Pa Ti",detail:"Carlos Santana · 1970",votes:1710},
+    {name:"Oye Como Va — Solo",detail:"Carlos Santana · 1971",votes:1687},
+    {name:"Gravity — Solo",detail:"John Mayer · 2006",votes:1665},
+    {name:"Red House — Solo",detail:"Jimi Hendrix · 1967",votes:1643},
+    {name:"Voodoo Child — Solo",detail:"Jimi Hendrix · 1968",votes:1621},
+    {name:"Foxy Lady — Solo",detail:"Jimi Hendrix · 1967",votes:1598},
+    {name:"Wish You Were Here — Intro",detail:"David Gilmour / Pink Floyd · 1975",votes:1576},
+    {name:"Time — Solo",detail:"David Gilmour / Pink Floyd · 1973",votes:1554},
+    {name:"Shine On You Crazy Diamond — Solo",detail:"David Gilmour / Pink Floyd · 1975",votes:1532},
+    {name:"La Villa Strangiato — Solo",detail:"Alex Lifeson / Rush · 1978",votes:1510},
+    {name:"YYZ — Solo",detail:"Alex Lifeson / Rush · 1981",votes:1487},
+    {name:"Limelight — Solo",detail:"Alex Lifeson / Rush · 1981",votes:1465},
+    {name:"Killing in the Name — Solo",detail:"Tom Morello / RATM · 1992",votes:1443},
+    {name:"Bulls on Parade — Solo",detail:"Tom Morello / RATM · 1996",votes:1421},
+    {name:"Cochise — Solo",detail:"Tom Morello / Audioslave · 2002",votes:1398},
+    {name:"Like a Stone — Solo",detail:"Tom Morello / Audioslave · 2002",votes:1376},
+    {name:"Jeremy — Solo",detail:"Mike McCready / Pearl Jam · 1991",votes:1354},
+    {name:"Alive — Solo",detail:"Mike McCready / Pearl Jam · 1991",votes:1332},
+    {name:"Black — Solo",detail:"Mike McCready / Pearl Jam · 1991",votes:1310},
+    {name:"Rusty Cage — Solo",detail:"Kim Thayil / Soundgarden · 1991",votes:1287},
+    {name:"Black Hole Sun — Solo",detail:"Kim Thayil / Soundgarden · 1994",votes:1265},
+    {name:"Rooster — Solo",detail:"Jerry Cantrell / Alice in Chains · 1992",votes:1243},
+    {name:"Down in a Hole — Solo",detail:"Jerry Cantrell / Alice in Chains · 1992",votes:1221},
+    {name:"Would? — Solo",detail:"Jerry Cantrell / Alice in Chains · 1992",votes:1198},
+    {name:"Heart-Shaped Box — Solo",detail:"Kurt Cobain / Nirvana · 1993",votes:1176},
+    {name:"Everlong — Solo",detail:"Dave Grohl / Foo Fighters · 1997",votes:1154},
+    {name:"Where Is My Mind? — Solo",detail:"Joey Santiago / Pixies · 1988",votes:1132},
+    {name:"Nothing Else Matters — Solo",detail:"Kirk Hammett / Metallica · 1991",votes:1110},
+    {name:"Orion — Solo",detail:"Kirk Hammett / Metallica · 1986",votes:1087},
+    {name:"Pull Me Under — Solo",detail:"John Petrucci / Dream Theater · 1992",votes:1065},
+    {name:"Glasgow Kiss",detail:"John Petrucci · 2005",votes:1043},
+    {name:"Number of the Beast — Solo",detail:"Murray & Smith / Iron Maiden · 1982",votes:1021},
+    {name:"Hallowed Be Thy Name — Solo",detail:"Dave Murray / Iron Maiden · 1982",votes:998},
+    {name:"Aces High — Solo",detail:"Murray & Smith / Iron Maiden · 1984",votes:976},
+    {name:"Breaking the Law — Solo",detail:"K.K. Downing / Judas Priest · 1980",votes:954},
+    {name:"Painkiller — Solo",detail:"Glenn Tipton / Judas Priest · 1990",votes:932},
+    {name:"While My Guitar Gently Weeps (Live '04)",detail:"Prince · 2004",votes:910},
+    {name:"Bat Out of Hell — Solo",detail:"Todd Rundgren / Meat Loaf · 1977",votes:887},
+    {name:"Am I Evil? — Solo",detail:"Brian Tatler / Diamond Head · 1980",votes:865},
+    {name:"Plush — Solo",detail:"Dean DeLeo / Stone Temple Pilots · 1992",votes:843},
+    {name:"Wicked Game — Solo",detail:"Chris Isaak · 1989",votes:821},
+    {name:"Smoke on the Water — Solo",detail:"Ritchie Blackmore / Deep Purple · 1972",votes:798},
+    {name:"Highway Star — Solo",detail:"Ritchie Blackmore / Deep Purple · 1972",votes:776},
+    {name:"Child in Time — Solo",detail:"Ritchie Blackmore / Deep Purple · 1970",votes:754},
+    {name:"Starman — Solo",detail:"Mick Ronson / David Bowie · 1972",votes:732},
+    {name:"Disarm — Solo",detail:"Billy Corgan / Smashing Pumpkins · 1993",votes:710},
+    {name:"Today — Solo",detail:"Billy Corgan / Smashing Pumpkins · 1993",votes:687},
+    {name:"Come As You Are — Solo",detail:"Kurt Cobain / Nirvana · 1992",votes:665},
+    {name:"Glycerine — Solo",detail:"Gavin Rossdale / Bush · 1994",votes:643},
+    {name:"Save Tonight — Solo",detail:"Eagle Eye Cherry · 1997",votes:621},
+    {name:"Under the Bridge — Solo",detail:"John Frusciante / RHCP · 1992",votes:598},
+    {name:"Soul to Squeeze — Solo",detail:"John Frusciante / RHCP · 1993",votes:576},
+    {name:"Californication — Solo",detail:"John Frusciante / RHCP · 1999",votes:554},
+    {name:"Freewill — Solo",detail:"Alex Lifeson / Rush · 1980",votes:532},
+  ],
+  decades:[
+    {name:"De jaren '70",detail:"Hard Rock, Prog Rock, Heavy Metal, Punk — de gouden eeuw van de rock",votes:8421},
+    {name:"De jaren '80",detail:"Metal, New Wave, Glam Rock, Post-Punk — overdaad & rauwe energie",votes:7876},
+    {name:"De jaren '60",detail:"Rock 'n Roll, Blues Rock, Psychedelica, Garage Rock — de oorsprong",votes:7321},
+    {name:"De jaren '90",detail:"Grunge, Alternative, Britpop, Nu-Metal — rauwe eerlijkheid",votes:6987},
+    {name:"De jaren '00",detail:"Nu-Metal, Post-Rock, Indie, Post-Punk Revival — experiment en diversiteit",votes:5654},
+    {name:"De jaren '50",detail:"Rock 'n Roll, Rockabilly, Early R&B — het allereerste begin",votes:4210},
+    {name:"De jaren '10",detail:"Indie Rock, Dream Pop, Post-Rock, Art Rock — fragmentatie & niche",votes:3876},
+    {name:"De jaren '20",detail:"Garage Punk Revival, Lo-Fi, Alt Country — nieuw landschap",votes:2543},
+  ]
+};
+
+let votes={};
+
+function getRankClass(i){if(i===0)return'top-1';if(i===1)return'top-2';if(i===2)return'top-3';return'top-other';}
+
+function renderList(key){
+  const list=document.getElementById('list-'+key);
+  if(!list)return;
+  const items=data[key];
+  const maxVotes=items[0].votes;
+  list.innerHTML='';
+  items.forEach((item,i)=>{
+    const id=key+'-'+i;
+    const voted=!!votes[id];
+    const displayVotes=item.votes+(voted?1:0);
+    const pct=Math.round((item.votes/maxVotes)*100);
+    const el=document.createElement('div');
+    el.className='rank-item '+getRankClass(i);
+    el.innerHTML=`
+      <div class="rank-num">${i+1}</div>
+      <div class="rank-info">
+        <div class="rank-name">${item.name}</div>
+        <div class="rank-detail">${item.detail}</div>
+      </div>
+      <div class="rank-votes">
+        <div class="vote-count">${displayVotes.toLocaleString('nl')}</div>
+        <div class="vote-label">stemmen</div>
+      </div>
+      <button class="vote-btn${voted?' voted':''}" onclick="castVote('${key}',${i})">
+        ${voted?'▼':'▲'}
+        <span class="vote-tooltip">${voted?'Annuleer stem':'Stem omhoog'}</span>
+      </button>
+      <div class="rank-bar" style="width:${pct}%"></div>`;
+    list.appendChild(el);
+  });
+}
+
+function castVote(key,i){
+  const id=key+'-'+i;
+  votes[id]=!votes[id];
+  renderList(key);
+  showToast(votes[id]?'Stem uitgebracht! 🤘':'Stem geannuleerd ↩');
+}
+
+let pollVoted=false;
+let pollVotes={'50s':87,'60s':234,'70s':412,'80s':356,'90s':289,'00s':143};
+let selectedPoll=null;
+
+function renderPoll(){
+  const total=Object.values(pollVotes).reduce((a,b)=>a+b,0);
+  const opts=[{key:'60s',label:"jaren '60"},{key:'70s',label:"jaren '70"},{key:'80s',label:"jaren '80"},{key:'90s',label:"jaren '90"},{key:'00s',label:"jaren '00"},{key:'50s',label:"jaren '50"}];
+  document.getElementById('pollOptions').innerHTML=opts.map(o=>{
+    const pct=Math.round((pollVotes[o.key]/total)*100);
+    return`<div class="poll-option"><div class="poll-label${selectedPoll===o.key?' selected':''}" onclick="selectPoll('${o.key}')"><span>${o.label}${selectedPoll===o.key?' ◀':''}</span><span>${pollVoted?pct+'%':''}</span></div><div class="poll-bar-bg"><div class="poll-bar-fill" style="width:${pollVoted?pct:0}%"></div></div></div>`;
+  }).join('');
+}
+
+function selectPoll(key){if(pollVoted)return;selectedPoll=key;renderPoll();}
+function submitPoll(){
+  if(!selectedPoll){showToast('Kies eerst een optie!');return;}
+  if(pollVoted){showToast('Je hebt al gestemd!');return;}
+  pollVotes[selectedPoll]++;pollVoted=true;renderPoll();showToast('Bedankt voor je stem! 🎸');
+}
+
+let comments=[
+  {name:"RockFan1972",text:"Led Zeppelin op #1 is absoluut verdiend. Plant en Page zijn ongekend.",time:"2u geleden"},
+  {name:"MetalHead_NL",text:"Metallica hoort VEEL hoger! Master of Puppets is het beste album ooit.",time:"5u geleden"},
+  {name:"GuitarHero88",text:"Comfortably Numb als beste solo is 100% correct. Gilmour is een god.",time:"gisteren"},
+];
+function renderComments(){
+  document.getElementById('commentsList').innerHTML=comments.map(c=>`<div class="comment"><div class="comment-header"><span class="comment-author">${c.name}</span><span class="comment-time">${c.time}</span></div><div class="comment-text">${c.text}</div></div>`).join('');
+}
+function addComment(){
+  const name=document.getElementById('commentName').value.trim();
+  const text=document.getElementById('commentText').value.trim();
+  if(!name||!text){showToast('Vul naam en reactie in!');return;}
+  comments.unshift({name,text,time:'zojuist'});
+  document.getElementById('commentName').value='';
+  document.getElementById('commentText').value='';
+  renderComments();showToast('Reactie geplaatst! 🎵');
+}
+
+const allItems=[
+  ...data.bands.map(b=>({...b,cat:'Band'})),
+  ...data.songs.map(s=>({...s,cat:'Song'})),
+  ...data.solos.map(s=>({...s,cat:'Solo'})),
+  ...data.decades.map(d=>({...d,cat:'Decennium'})),
+];
+function handleSearch(q){
+  const res=document.getElementById('searchResults');
+  if(!q.trim()){res.classList.remove('visible');return;}
+  const found=allItems.filter(i=>i.name.toLowerCase().includes(q.toLowerCase())||i.detail.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+  if(!found.length){res.classList.remove('visible');return;}
+  res.innerHTML=found.map(i=>`<div class="search-result-item"><div class="sr-name">${i.name}</div><div class="sr-cat">${i.cat} · ${i.detail}</div></div>`).join('');
+  res.classList.add('visible');
+}
+function showSearchResults(){const q=document.getElementById('searchInput').value;if(q.trim())handleSearch(q);}
+function hideSearchResults(){document.getElementById('searchResults').classList.remove('visible');}
+
+function switchTab(key,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+key).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+function switchTabByKey(key,navLink){
+  const map={bands:0,songs:1,solos:2,decades:3};
+  const tabBtns=document.querySelectorAll('.tab-btn');
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  navLink.classList.add('active');
+  switchTab(key,tabBtns[map[key]]);
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+['bands','songs','solos','decades'].forEach(renderList);
+renderPoll();
+renderComments();
+</script>
+</body>
+</html>
